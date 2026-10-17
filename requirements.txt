@@ -1,0 +1,6 @@
+pdfplumber
+pytest
+streamlit>=1.66
+plotly
+pandas
+reportlab
