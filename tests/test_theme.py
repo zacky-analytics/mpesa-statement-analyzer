@@ -63,3 +63,8 @@ def test_csv_has_a_header_and_plain_numbers_for_excel():
 
 def test_csv_of_no_rows_is_just_the_header():
     assert rows_to_csv([]).decode("utf-8-sig").strip() == "Date,Receipt,Details,Category,Paid in,Paid out,Balance"
+
+
+def test_header_shows_chips_and_escapes_them():
+    out = header_html("e", "Title", "sub", chips=["Nothing is saved", "<b>x</b>"])
+    assert "Nothing is saved" in out and "<b>x</b>" not in out and 'class="hero"' in out

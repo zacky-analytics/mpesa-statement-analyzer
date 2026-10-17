@@ -13,13 +13,13 @@ This file holds no money logic. It only styles what other files calculated.
 import html
 
 NAVY = "#10233f"       # side panel, text, headings
-PAPER = "#f3f6fa"      # page background
+PAPER = "#eaeff6"      # page background
 CARD = "#ffffff"       # cards and tables
 GREEN = "#12805c"      # money in, buttons, active tab
 RED = "#c23b3b"        # money out
 AMBER = "#b7791f"      # fees and things to check
 MUTED = "#5b6b82"      # labels and notes
-RULE = "#e1e7ef"       # thin lines
+RULE = "#cdd7e5"       # thin lines
 AMBER_BG = "#fff6e0"
 GREEN_BG = "#e8f5ef"
 SOFT_BG = "#f1f4f9"
@@ -36,7 +36,7 @@ html, body, .stApp, .stApp p, .stApp label, .stApp h1, .stApp h2, .stApp h3,
 .stApp li, .stApp input, .stApp button, .stApp textarea { font-family: %FONT%; }
 
 .stApp { background: %PAPER%; }
-.block-container { max-width: 1180px; padding-top: 1.6rem; padding-bottom: 3rem; }
+.block-container { max-width: 1180px; padding-top: 3.2rem; padding-bottom: 3rem; }
 
 /* hide Streamlit's own Deploy button, menu and footer */
 .stDeployButton, footer, #MainMenu { display: none !important; }
@@ -62,19 +62,27 @@ section[data-testid="stSidebar"] button:hover { border-color: #ffffff; }
            font-size: .82rem; color: #dbe5f3; margin-top: 1.5rem; }
 .privacy b { color: #ffffff; letter-spacing: .06em; font-size: .72rem; }
 
-/* ------------------------------------------------ page header */
-.eyebrow { font-size: .74rem; letter-spacing: .1em; text-transform: uppercase; color: %MUTED%; }
-.page-title { font-size: 2rem; font-weight: 600; color: %NAVY%; margin: .15rem 0 .1rem 0;
-              line-height: 1.2; }
-.page-sub { color: %MUTED%; font-size: .95rem; margin: 0 0 1.1rem 0; }
+/* ------------------------------------------------ page header (hero band) */
+.hero { background: %NAVY%; border-bottom: 4px solid %GREEN%; border-radius: 16px;
+        padding: 1.4rem 1.5rem 1.3rem 1.5rem; margin-bottom: 1.3rem;
+        box-shadow: 0 6px 18px rgba(16,35,63,.22); }
+.eyebrow { font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: #8fb3e0; }
+.page-title { font-size: 2.1rem; font-weight: 600; color: #ffffff; margin: .2rem 0 .3rem 0;
+              line-height: 1.15; }
+.page-sub { color: #c9d6ea; font-size: .98rem; margin: 0; max-width: 46rem; }
+.chips { margin-top: .9rem; }
+.chip { display: inline-block; background: rgba(255,255,255,.12); color: #e6edf7;
+        border-radius: 999px; padding: .25rem .75rem; font-size: .76rem; margin: 0 .4rem .4rem 0; }
+.chip b { color: #5fd3a6; margin-right: .3rem; }
 
 /* ------------------------------------------------ cards */
 [data-testid="stVerticalBlockBorderWrapper"] {
-    background: %CARD%; border: 1px solid %RULE%; border-radius: 12px;
-    box-shadow: 0 1px 2px rgba(16,35,63,.05); }
+    background: %CARD%; border: 1px solid %RULE%; border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(16,35,63,.10); }
 
-.stat { background: %CARD%; border: 1px solid %RULE%; border-radius: 12px;
-        padding: .95rem 1.1rem; box-shadow: 0 1px 2px rgba(16,35,63,.05); }
+.stat { background: %CARD%; border: 1px solid %RULE%; border-top: 5px solid %NAVY%;
+        border-radius: 14px; padding: .95rem 1.1rem 1rem 1.1rem;
+        box-shadow: 0 2px 8px rgba(16,35,63,.10); }
 .stat-label { color: %MUTED%; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; }
 .stat-value { font-size: 1.4rem; font-weight: 600; font-variant-numeric: tabular-nums;
               white-space: nowrap; line-height: 1.35; margin-top: .15rem; }
@@ -85,9 +93,9 @@ section[data-testid="stSidebar"] button:hover { border-color: #ffffff; }
 
 /* statement check strip */
 .check { display: flex; align-items: center; gap: 1.6rem; flex-wrap: wrap;
-         background: %CARD%; border: 1px solid %RULE%; border-radius: 12px;
-         padding: .9rem 1.2rem; margin: .2rem 0 1rem 0; border-left: 5px solid %GREEN%;
-         box-shadow: 0 1px 2px rgba(16,35,63,.05); }
+         background: %CARD%; border: 1px solid %RULE%; border-radius: 14px;
+         padding: .9rem 1.2rem; margin: .2rem 0 1rem 0; border-left: 6px solid %GREEN%;
+         box-shadow: 0 2px 8px rgba(16,35,63,.10); }
 .check.bad { border-left-color: %RED%; }
 .check-main { flex: 1 1 200px; }
 .check-title { font-weight: 600; color: %NAVY%; }
@@ -122,8 +130,10 @@ button[role="tab"][aria-selected="true"] p { color: %GREEN%; }
 
 /* phones */
 @media (max-width: 640px) {
-  .block-container { padding-left: 1rem; padding-right: 1rem; padding-top: 1rem; }
-  .page-title { font-size: 1.5rem; }
+  .block-container { padding-left: 1rem; padding-right: 1rem; padding-top: 4rem; }
+  .hero { padding: 1.1rem 1.1rem 1rem 1.1rem; border-radius: 14px; }
+  .page-title { font-size: 1.55rem; }
+  .page-sub { font-size: .9rem; }
   .stat { margin-bottom: .6rem; }
   .stat-value { font-size: 1.25rem; }
   .check { gap: .8rem 1.2rem; padding: .8rem 1rem; }
@@ -147,10 +157,12 @@ def _e(text):
     return html.escape(str(text))
 
 
-def header_html(eyebrow, title, subtitle):
-    return (f'<div class="eyebrow">{_e(eyebrow)}</div>'
+def header_html(eyebrow, title, subtitle, chips=()):
+    chip_html = "".join(f'<span class="chip"><b>&#10003;</b>{_e(c)}</span>' for c in chips)
+    chips_block = f'<div class="chips">{chip_html}</div>' if chip_html else ""
+    return (f'<div class="hero"><div class="eyebrow">{_e(eyebrow)}</div>'
             f'<div class="page-title">{_e(title)}</div>'
-            f'<p class="page-sub">{_e(subtitle)}</p>')
+            f'<p class="page-sub">{_e(subtitle)}</p>{chips_block}</div>')
 
 
 def brand_html(name, sub):
@@ -173,7 +185,7 @@ def card_html(label, value, tone="neutral", note=""):
     """One number card. tone: in (green), out (red), warn (amber) or neutral (navy)."""
     color = TONES.get(tone, TONES["neutral"])
     note_html = f'<div class="stat-note">{_e(note)}</div>' if note else ""
-    return (f'<div class="stat">'
+    return (f'<div class="stat" style="border-top-color:{color}">'
             f'<div class="stat-label">{_e(label)}</div>'
             f'<div class="stat-value" style="color:{color}">{_e(value)}</div>'
             f'{note_html}</div>')

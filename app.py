@@ -88,8 +88,9 @@ st.markdown(
     header_html(
         "Personal finance / overview",
         "Your M-Pesa, at a glance",
-        "A clear view of the money moving through your account. Every number is checked "
-        "against your statement's own totals.",
+        "A clear view of the money moving through your account.",
+        chips=["Checked against your statement's own totals", "Nothing is saved",
+               "Works with password-protected PDFs"],
     ),
     unsafe_allow_html=True,
 )
