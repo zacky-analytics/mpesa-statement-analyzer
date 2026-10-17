@@ -7,6 +7,20 @@ Press **"Try it with sample data"** to explore with fake statements. No upload n
 
 ---
 
+## Screenshots
+
+All screenshots use the built-in **fake sample data**.
+
+![Home page](screenshots/01-home.png)
+
+![Dashboard: checked totals, cards, spending by category, month comparison](screenshots/02-dashboard.png)
+
+![Plain-English summary](screenshots/03-summary.png)
+
+![PDF report](screenshots/04-pdf-report.png)
+
+---
+
 ## Why this one is different
 
 Most statement tools show numbers and ask you to trust them. This one **checks itself**:
