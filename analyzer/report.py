@@ -34,7 +34,7 @@ from analyzer.categorizer import category_totals, uncategorized_rows, uncategori
 from analyzer.display import comparison_rows, money
 from analyzer.metrics import calculate_totals
 from analyzer.series import closing_balances, daily_flow
-from analyzer.summary import build_summary
+from analyzer.summary import build_summary, reversal_note
 
 NAVY = colors.HexColor("#10233f")
 BLUE = NAVY
@@ -230,6 +230,10 @@ def build_report(combined):
         ("ALIGN", (0, 0), (0, -1), "LEFT"), ("ALIGN", (2, 0), (2, -1), "LEFT"),
     ]))
     story.append(table)
+    reversal_warning = reversal_note(totals)
+    if reversal_warning:
+        story.append(Spacer(1, 6))
+        story.append(_p(reversal_warning, NOTE))
 
     # ---- categories
     categories = category_totals(transactions)

@@ -34,7 +34,7 @@ from analyzer.pipeline import combine, process_file
 from analyzer.report import build_report
 from analyzer.sample import sample_combined
 from analyzer.series import closing_balances, daily_flow
-from analyzer.summary import build_summary
+from analyzer.summary import build_summary, reversal_note
 from analyzer.theme import (
     CSS, GREEN, NAVY, RED,
     badge_html, brand_html, card_html, check_html, figure_layout, footer_html, header_html,
@@ -197,7 +197,11 @@ cards[2].markdown(card_html("Fees paid", money(totals.fees_paid), "warn", "Alrea
 cards[3].markdown(card_html("Net flow", ("+" if totals.net >= 0 else "") + money(totals.net),
                             "in" if totals.net >= 0 else "out", "Money in minus money out"),
                   unsafe_allow_html=True)
-st.write("")
+reversal_warning = reversal_note(totals)
+if reversal_warning:
+    st.warning(reversal_warning)
+else:
+    st.write("")
 
 # ---------------------------------------------------------------- tabs
 tab_spend, tab_trends, tab_summary, tab_tx = st.tabs(

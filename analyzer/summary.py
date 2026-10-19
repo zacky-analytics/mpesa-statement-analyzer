@@ -125,12 +125,24 @@ def _fees_sentence(totals):
     return text + (f", which is {share} of money out." if share else ".")
 
 
-def _reversal_sentence(totals):
+def reversal_note(totals):
+    """
+    The plain warning shown wherever reversals appear (page, summary, PDF).
+    None when the statements have no reversals.
+
+    Reversals are NOT matched to the payment they cancel, because matching
+    would be a guess. So the original payment stays in its own category.
+    """
     if totals.reversals_in == 0 and totals.reversals_out == 0:
         return None
-    return (f"Reversals: {money(totals.reversals_in)} came back and "
-            f"{money(totals.reversals_out)} went out. They are shown on their own "
-            f"line and are not counted as spending.")
+    return (f"Reversals found: {money(totals.reversals_in)} came back and "
+            f"{money(totals.reversals_out)} went out. Reversal rows are never counted as "
+            f"spending, but they are not matched to the payment they cancel, so that "
+            f"original payment is still counted in its own category and in spending.")
+
+
+def _reversal_sentence(totals):
+    return reversal_note(totals)
 
 
 def _uncategorized_sentence(transactions):
