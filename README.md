@@ -28,6 +28,7 @@ Most statement tools show numbers and ask you to trust them. This one **checks i
 - Every statement file is reconciled against **its own printed summary totals** (money in and money out). If the numbers do not match exactly, the file is left out and you are told why.
 - Money uses exact decimal arithmetic, never floating point, so there are no rounding surprises.
 - Rows that cannot be categorized are **shown, never guessed**.
+- A reversal is tied to the payment it cancels **only on exact evidence** (same person, same amount, one possible payment). If there is any doubt, nothing is matched and a warning says so.
 - Month-to-month changes are stated **only when both months are fully covered** by the statements. Otherwise the app says why it is not comparing.
 - The plain-English summary is written by code from the checked numbers. It gives no advice and invents nothing.
 
@@ -36,7 +37,7 @@ Most statement tools show numbers and ask you to trust them. This one **checks i
 - Password-protected PDF statements (enter the password for each file)
 - Upload several statements: they are merged and exact duplicate rows are counted once
 - Dashboard cards: money in, money out, fees paid, net flow
-- Spending by category: sent to people, bills (Pay Bill), shops (Buy Goods), airtime and bundles, cash withdrawals and deposits, fees, reversals, Fuliza borrowed and repaid
+- Spending by category: sent to people, bills (Pay Bill), shops (Buy Goods), airtime and bundles, cash withdrawals and deposits, international bank transfers received, fees, reversals, Fuliza borrowed and repaid
 - Fuliza handled correctly: borrowed money is not income and repayments are not spending
 - Spending facts: average per day, biggest spending day, busiest weekday, where the most money went
 - Daily money in and out, closing balance chart, month-by-month comparison
@@ -80,6 +81,7 @@ The tests cover parsing, cleaning, reconciliation, categories, comparisons, the 
 | `analyzer/cleaner.py` | Turns text rows into typed transactions and checks totals |
 | `analyzer/pipeline.py` | Checks each file, merges files, removes duplicates, finds coverage |
 | `analyzer/metrics.py`, `categorizer.py` | Totals and categories |
+| `analyzer/reversals.py` | Pairs a reversal with its payment, only on exact evidence |
 | `analyzer/comparison.py` | Month-to-month comparison, only when like for like |
 | `analyzer/summary.py`, `insights.py` | Plain-English summary and spending facts |
 | `analyzer/report.py` | PDF report (ReportLab) |

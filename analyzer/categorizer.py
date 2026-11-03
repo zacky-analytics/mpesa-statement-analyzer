@@ -3,7 +3,9 @@ categorizer.py - puts every transaction into exactly one category.
 
 Rules (not case sensitive, first match wins):
   1. Fees                  - decided by Transaction.is_fee (cleaner.py)
-  2. Reversals             - decided by Transaction.is_reversal (cleaner.py)
+  2. Reversals             - decided by Transaction.is_reversal (cleaner.py),
+                             plus the one payment a reversal was PROVEN to cancel
+                             (Transaction.is_cancelled_payment, set by reversals.py)
   3. Fuliza loans          - decided by Transaction.is_loan_draw / is_loan_repayment
   4. Exact PREFIX rules    - the Details text must START with the phrase
   5. Keyword rule          - 'airtime' anywhere in the text (only after the
@@ -24,6 +26,7 @@ REVERSALS = "Reversals"
 SENT = "Sent to people"
 RECEIVED = "Received from people"
 RECEIVED_BUSINESS = "Received from businesses"
+INTERNATIONAL = "International transfers received"
 BILLS = "Bills (Pay Bill)"
 SHOPS = "Shops (Buy Goods)"
 AIRTIME = "Airtime & bundles"
@@ -35,7 +38,7 @@ UNCATEGORIZED = "Uncategorized"
 
 # Display order on the dashboard
 CATEGORY_ORDER = [
-    FEES, REVERSALS, SENT, RECEIVED, RECEIVED_BUSINESS, BILLS, SHOPS, AIRTIME, DEPOSITS, WITHDRAWALS,
+    FEES, REVERSALS, SENT, RECEIVED, RECEIVED_BUSINESS, INTERNATIONAL, BILLS, SHOPS, AIRTIME, DEPOSITS, WITHDRAWALS,
     FULIZA_BORROWED, FULIZA_REPAID, UNCATEGORIZED,
 ]
 
@@ -45,11 +48,13 @@ PREFIX_RULES = [
     ("customer transfer fuliza", SENT),            # sent using Fuliza money
     ("funds received from", RECEIVED),
     ("business payment from", RECEIVED_BUSINESS),   # banks and businesses paying in
+    ("receive international transfer from", INTERNATIONAL),   # bank transfers in (e.g. Stanbic, Absa)
     ("pay bill to", BILLS),
     ("sha customer insurance payment", BILLS),     # health insurance paybill
     ("pay bill fuliza", BILLS),                     # paid using Fuliza money
     ("pay bill online fuliza", BILLS),
     ("merchant payment to", SHOPS),
+    ("merchant payment online to", SHOPS),         # online checkout, e.g. a payment gateway
     ("merchant payment fuliza", SHOPS),
     ("customer payment to small business", SHOPS),
     ("customer bundle purchase", AIRTIME),
@@ -75,7 +80,7 @@ class CategoryTotal:
 def categorize(transaction):
     if transaction.is_fee:
         return FEES
-    if transaction.is_reversal:
+    if transaction.is_reversal or transaction.is_cancelled_payment:
         return REVERSALS
     if transaction.is_loan_draw:
         return FULIZA_BORROWED

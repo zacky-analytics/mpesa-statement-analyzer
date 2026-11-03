@@ -38,7 +38,7 @@ from analyzer.summary import build_summary, reversal_note
 from analyzer.theme import (
     CSS, GREEN, NAVY, RED,
     badge_html, brand_html, card_html, check_html, figure_layout, footer_html, header_html,
-    month_html, note_html, panel_title_html, privacy_html,
+    month_html, note_html, panel_title_html, password_help_html, privacy_html,
 )
 
 st.set_page_config(page_title="M-Pesa Statement Analyzer", page_icon="📒", layout="wide")
@@ -109,9 +109,11 @@ with st.container(border=True):
     )
     st.button("Or try it with sample data (fake statements)", on_click=load_sample)
     if uploads:
-        with st.form("passwords", border=False):
+        with st.form("passwords", border=True):
+            st.markdown(password_help_html(), unsafe_allow_html=True)
             passwords = [
                 st.text_input(f"Password for {u.name}", type="password",
+                              placeholder="Type the PDF password here",
                               key=f"pw_{st.session_state['round']}_{i}")
                 for i, u in enumerate(uploads)
             ]
@@ -184,9 +186,18 @@ with st.expander("Accuracy details, file by file", expanded=needs_attention):
             st.warning(warning)
 
 # ---------------------------------------------------------------- number cards
-in_note = f"Includes {money(totals.loans_in)} borrowed from Fuliza" if totals.loans_in else "All money received"
-out_note = (f"Includes {money(totals.loans_repaid)} Fuliza repayments" if totals.loans_repaid
-            else "Includes fees and reversals")
+in_bits = []
+if totals.loans_in:
+    in_bits.append(f"Includes {money(totals.loans_in)} borrowed from Fuliza")
+if totals.cancelled_in:
+    in_bits.append(f"Includes {money(totals.cancelled_in)} sent back (reversal)")
+in_note = ". ".join(in_bits) if in_bits else "All money received"
+out_bits = []
+if totals.loans_repaid:
+    out_bits.append(f"Includes {money(totals.loans_repaid)} Fuliza repayments")
+if totals.cancelled_out:
+    out_bits.append(f"Includes {money(totals.cancelled_out)} that came back (reversal)")
+out_note = ". ".join(out_bits) if out_bits else "Includes fees and reversals"
 unknown = uncategorized_rows(transactions)
 
 cards = st.columns(4)
@@ -197,9 +208,10 @@ cards[2].markdown(card_html("Fees paid", money(totals.fees_paid), "warn", "Alrea
 cards[3].markdown(card_html("Net flow", ("+" if totals.net >= 0 else "") + money(totals.net),
                             "in" if totals.net >= 0 else "out", "Money in minus money out"),
                   unsafe_allow_html=True)
-reversal_warning = reversal_note(totals)
-if reversal_warning:
-    st.warning(reversal_warning)
+reversal_message = reversal_note(totals)
+if reversal_message:
+    # Warning only when some reversal could not be matched; a clean match is just information.
+    (st.warning if totals.reversals_unmatched else st.info)(reversal_message)
 else:
     st.write("")
 

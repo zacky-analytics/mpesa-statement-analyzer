@@ -217,3 +217,51 @@ def test_money_paid_in_by_banks_and_businesses():
 def test_health_insurance_paybill_and_small_business_payments():
     assert categorize(tx("SHA Customer Insurance Payment to 200222 - SHA Acc. 12345", paid_out="2600")) == BILLS
     assert categorize(tx("Customer Payment to Small Business to - 254700***001 TEST PERSON", paid_out="60")) == SHOPS
+
+
+# ---- bank transfers and online merchant payments (fake bank text, real wording shape)
+
+def _row(details, paid_in="0", paid_out="0"):
+    from datetime import datetime
+    from decimal import Decimal
+    from analyzer.cleaner import Transaction
+    return Transaction("TESTRECEIPT", datetime(2026, 10, 1, 9, 0), details, "Completed",
+                       Decimal(paid_in), Decimal(paid_out), Decimal("0"))
+
+
+def test_international_transfers_have_their_own_category():
+    from analyzer.categorizer import INTERNATIONAL, categorize
+    row = _row("Receive International Transfer From 000001 - TEST BANK PLC. Original conversation ID is X_1.",
+               paid_in="5,000".replace(",", ""))
+    assert categorize(row) == INTERNATIONAL
+    assert INTERNATIONAL == "International transfers received"
+
+
+def test_international_rule_matches_the_start_of_the_text_only():
+    from analyzer.categorizer import INTERNATIONAL, UNCATEGORIZED, categorize
+    row = _row("Funds received from - TEST PERSON about an International Transfer From abroad", paid_in="10")
+    assert categorize(row) != INTERNATIONAL
+    assert categorize(_row("Some other bank wording - TEST BANK", paid_in="10")) == UNCATEGORIZED
+
+
+def test_merchant_payment_online_is_a_shop_payment():
+    from analyzer.categorizer import SHOPS, categorize
+    assert categorize(_row("Merchant Payment Online to 000000 - TEST GATEWAY LIMITED .", paid_out="100")) == SHOPS
+
+
+def test_international_transfers_are_money_in_not_spending():
+    from analyzer.categorizer import INTERNATIONAL, SPENDING_CATEGORIES, category_totals
+    totals = category_totals([_row("Receive International Transfer From 000001 - TEST BANK PLC.", paid_in="250")])
+    assert [c.category for c in totals] == [INTERNATIONAL]
+    assert INTERNATIONAL not in SPENDING_CATEGORIES
+    assert totals[0].money_in == 250 and totals[0].money_out == 0
+
+
+def test_the_five_real_wordings_leave_nothing_uncategorized():
+    from analyzer.categorizer import uncategorized_rows
+    rows = [
+        _row("Receive International Transfer From 4131211 - ABSA BANK KENYA PLC - MONEY TRANSFER. Original conversation ID is 1_X_0.", paid_in="128"),
+        _row("Receive International Transfer From 151261 - STANBIC BANK. Original conversation ID is 2_SW-1- 49f2-a721-1_FT1.", paid_in="249955"),
+        _row("Merchant Payment Online to 564147 - PESAPAL LIMITED .", paid_out="10000"),
+    ]
+    assert uncategorized_rows(rows) == []

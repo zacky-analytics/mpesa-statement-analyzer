@@ -5,7 +5,7 @@ from decimal import Decimal
 from analyzer.categorizer import CategoryTotal
 from analyzer.display import category_rows, rows_to_csv
 from analyzer.theme import (
-    CSS, GREEN, NAVY, RED, brand_html, card_html, check_html, figure_layout, header_html, month_html,
+    CSS, GREEN, NAVY, RED, brand_html, card_html, check_html, figure_layout, header_html, month_html, password_help_html,
 )
 
 
@@ -68,3 +68,13 @@ def test_csv_of_no_rows_is_just_the_header():
 def test_header_shows_chips_and_escapes_them():
     out = header_html("e", "Title", "sub", chips=["Nothing is saved", "<b>x</b>"])
     assert "Nothing is saved" in out and "<b>x</b>" not in out and 'class="hero"' in out
+
+
+def test_the_password_step_is_explained_in_plain_words():
+    html = password_help_html()
+    assert "Step 2" in html and "Type your statement password" in html
+    assert "leave the box empty" in html
+
+
+def test_the_text_box_is_styled_as_a_visible_white_box():
+    assert "stTextInputRootElement" in CSS and "border: 2px solid" in CSS

@@ -119,6 +119,24 @@ section[data-testid="stSidebar"] button:hover { border-color: #ffffff; }
          padding: .15rem .65rem; font-size: .78rem; }
 .badge.ok { background: %GREEN_BG%; color: %GREEN%; }
 
+/* password step: impossible to miss */
+.pw-help { display: flex; gap: .8rem; align-items: flex-start; background: %AMBER_BG%;
+           border: 1px solid #ecd9a8; border-radius: 10px; padding: .7rem .9rem; margin: .1rem 0 .6rem 0; }
+.pw-step { background: %NAVY%; color: #ffffff; font-size: .7rem; font-weight: 600; letter-spacing: .06em;
+           text-transform: uppercase; border-radius: 999px; padding: .22rem .7rem; white-space: nowrap;
+           margin-top: .1rem; }
+.pw-title { font-weight: 600; color: %NAVY%; margin: 0; font-size: .98rem; }
+.pw-sub { font-size: .82rem; color: %MUTED%; margin: .1rem 0 0 0; }
+
+/* text boxes: a clear white box with a visible border (the password box uses this) */
+[data-testid="stTextInputRootElement"], [data-testid="stTextInput"] [data-baseweb="input"] {
+    background: #ffffff !important; border: 2px solid #7f93b0 !important; border-radius: 8px !important; }
+[data-testid="stTextInputRootElement"]:focus-within,
+[data-testid="stTextInput"] [data-baseweb="input"]:focus-within {
+    border-color: %GREEN% !important; box-shadow: 0 0 0 3px rgba(18,128,92,.2); }
+[data-testid="stTextInput"] input { background: #ffffff !important; color: %NAVY%; }
+[data-testid="stTextInput"] label p { font-weight: 600; color: %NAVY%; }
+
 /* tabs */
 button[role="tab"] p { font-weight: 500; font-size: .98rem; }
 [data-baseweb="tab-highlight"] { background-color: %GREEN% !important; }
@@ -174,6 +192,14 @@ def brand_html(name, sub):
 def privacy_html():
     return ('<div class="privacy"><b>PRIVACY</b><br>Files are read in memory on the server while you use the app. '
             'Nothing is saved by the app.</div>')
+
+
+def password_help_html():
+    """The clear 'Step 2' box shown above the password boxes."""
+    return ('<div class="pw-help"><span class="pw-step">Step 2</span><div>'
+            '<p class="pw-title">Type your statement password</p>'
+            '<p class="pw-sub">Type it in the white box below, then press Analyze. '
+            'If your PDF has no password, leave the box empty.</p></div></div>')
 
 
 def panel_title_html(title, sub=""):

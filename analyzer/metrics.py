@@ -4,8 +4,11 @@ metrics.py - calculates the numbers shown on the dashboard.
 Rules:
 - All money is Decimal.
 - Fees are counted separately, but they stay INSIDE total money out.
-  money_out = spending + fees + reversals_out + loans_repaid
+  money_out = spending + fees + reversals_out + loans_repaid + cancelled_out
 - Reversal rows are never counted as fees or spending. They get their own line.
+- A payment that a reversal was PROVEN to cancel (see reversals.py) is also taken
+  out of spending (cancelled_out) and shown under Reversals. money_in and
+  money_out still equal the statement's own checked totals.
 - Fuliza rows are loans: money borrowed (loans_in) and money repaid (loans_repaid)
   have their own lines. Repayments are not spending.
 - Fee and reversal detection lives in cleaner.py (Transaction.is_fee and
@@ -27,13 +30,19 @@ class Totals:
     money_out: Decimal       # everything that left, fees included
     fees_paid: Decimal       # part of money_out
     fee_count: int
-    spending: Decimal        # money_out without fees and reversals
+    spending: Decimal        # money_out without fees, reversals and proven-cancelled payments
     reversals_in: Decimal
     reversals_out: Decimal
     net: Decimal             # money_in - money_out
     transaction_count: int
     loans_in: Decimal = ZERO        # Fuliza money borrowed (part of money_in)
     loans_repaid: Decimal = ZERO    # Fuliza repayments (part of money_out)
+    cancelled_in: Decimal = ZERO    # money received, then sent back by a proven reversal (part of money_in)
+    cancelled_out: Decimal = ZERO   # money paid, then returned by a proven reversal (part of money_out)
+    reversals_matched: int = 0      # reversal rows tied to exactly one payment
+    reversals_unmatched: int = 0    # reversal rows we could not tie to exactly one payment
+    unmatched_in: Decimal = ZERO    # money in on the unmatched reversal rows
+    unmatched_out: Decimal = ZERO   # money out on the unmatched reversal rows
 
 
 @dataclass(frozen=True)
@@ -57,18 +66,29 @@ def calculate_totals(transactions):
     reversals_in = sum((t.paid_in for t in reversal_rows), ZERO)
     reversals_out = sum((t.paid_out for t in reversal_rows), ZERO)
 
+    cancelled = [t for t in transactions if t.is_cancelled_payment]
+    cancelled_in = sum((t.paid_in for t in cancelled), ZERO)
+    cancelled_out = sum((t.paid_out for t in cancelled), ZERO)
+    unmatched = [t for t in reversal_rows if not t.matched_reversal]
+
     return Totals(
         money_in=money_in,
         money_out=money_out,
         fees_paid=fees_paid,
         fee_count=len(fee_rows),
-        spending=money_out - fees_paid - reversals_out - loans_repaid,
+        spending=money_out - fees_paid - reversals_out - loans_repaid - cancelled_out,
         reversals_in=reversals_in,
         reversals_out=reversals_out,
         net=money_in - money_out,
         transaction_count=len(transactions),
         loans_in=loans_in,
         loans_repaid=loans_repaid,
+        cancelled_in=cancelled_in,
+        cancelled_out=cancelled_out,
+        reversals_matched=len(reversal_rows) - len(unmatched),
+        reversals_unmatched=len(unmatched),
+        unmatched_in=sum((t.paid_in for t in unmatched), ZERO),
+        unmatched_out=sum((t.paid_out for t in unmatched), ZERO),
     )
 
 
@@ -79,7 +99,7 @@ def top_transactions(transactions, count=5):
     """
     candidates = [
         t for t in transactions
-        if t.paid_out > 0 and not t.is_fee and not t.is_reversal
+        if t.paid_out > 0 and not t.is_fee and not t.is_reversal and not t.is_cancelled_payment
     ]
     candidates.sort(key=lambda t: (-t.paid_out, t.time))
     return candidates[:count]

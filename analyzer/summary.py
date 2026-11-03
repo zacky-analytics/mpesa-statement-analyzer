@@ -127,18 +127,34 @@ def _fees_sentence(totals):
 
 def reversal_note(totals):
     """
-    The plain warning shown wherever reversals appear (page, summary, PDF).
+    The plain note shown wherever reversals appear (page, summary, PDF).
     None when the statements have no reversals.
 
-    Reversals are NOT matched to the payment they cancel, because matching
-    would be a guess. So the original payment stays in its own category.
+    A reversal is tied to its payment only on exact evidence (reversals.py).
+    Reversals we could not tie to ONE payment are NOT netted, because that
+    would be a guess, and we say so.
     """
     if totals.reversals_in == 0 and totals.reversals_out == 0:
         return None
-    return (f"Reversals found: {money(totals.reversals_in)} came back and "
-            f"{money(totals.reversals_out)} went out. Reversal rows are never counted as "
+    parts = []
+    if totals.reversals_matched:
+        said = []
+        if totals.cancelled_in:
+            said.append(f"{money(totals.cancelled_in)} was received and then sent back")
+        if totals.cancelled_out:
+            said.append(f"{money(totals.cancelled_out)} was paid and then came back")
+        parts.append(
+            "Reversals matched: " + "; ".join(said) + ". Each pair has the same person "
+            "and the same amount, and is shown under Reversals, not counted as spending. "
+            "Money in and money out still show the statement's own totals.")
+    if totals.reversals_unmatched:
+        parts.append(
+            f"Reversals found: {money(totals.unmatched_in)} came back and "
+            f"{money(totals.unmatched_out)} went out. Reversal rows are never counted as "
             f"spending, but they are not matched to the payment they cancel, so that "
-            f"original payment is still counted in its own category and in spending.")
+            f"original payment is still counted in its own category (and in spending, "
+            f"if it was money you paid).")
+    return " ".join(parts)
 
 
 def _reversal_sentence(totals):

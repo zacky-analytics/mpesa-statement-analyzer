@@ -23,6 +23,9 @@ class Transaction:
     paid_in: Decimal    # money received, 0 or more
     paid_out: Decimal   # money that left, 0 or more (the statement shows it as negative)
     balance: Decimal
+    # True only on BOTH rows of a reversal pair that reversals.py proved
+    # (the reversal row and the one payment it cancels). Never set by guessing.
+    matched_reversal: bool = False
 
     # ---- The ONE place where fees and reversals are recognized ----
     # metrics.py only uses these two checks. It never matches text itself.
@@ -30,6 +33,11 @@ class Transaction:
     @property
     def is_reversal(self):
         return "reversal" in self.details.lower()
+
+    @property
+    def is_cancelled_payment(self):
+        """An ordinary payment that a proven reversal cancelled (not the reversal row)."""
+        return self.matched_reversal and not self.is_reversal
 
     @property
     def is_fee(self):

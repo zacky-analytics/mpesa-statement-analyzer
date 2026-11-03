@@ -16,6 +16,8 @@ The order is fixed, and the web page and check_statement.py both use it:
     should hold exactly the same transactions. If not, we warn.
  5. Coverage is each file's stated period, combined (see comparison.py).
     It is never guessed from transaction dates.
+ 6. A reversal is paired with the payment it cancels only on exact evidence
+    (same person, same amount, one possible payment). See reversals.py.
 
 This file holds the logic so that it can be tested. app.py only draws it.
 """
@@ -30,6 +32,7 @@ from analyzer.comparison import (
     report_notes,
 )
 from analyzer.parser import StatementError, StatementPeriod, read_statement_detailed
+from analyzer.reversals import mark_reversal_pairs
 
 COMPLETED = "Completed"
 
@@ -178,6 +181,7 @@ def combine(results):
     passed_positions = [i for i, r in enumerate(results) if r.ok]
     merged, removed_per_file = _merge([results[i].transactions for i in passed_positions])
     merged.sort(key=lambda t: t.time)     # stable: ties keep their original order
+    merged = mark_reversal_pairs(merged)  # only exact, single matches (see reversals.py)
 
     files = list(results)
     for position, removed in zip(passed_positions, removed_per_file):
